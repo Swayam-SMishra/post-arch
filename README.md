@@ -8,7 +8,7 @@
 
 ```bash
 # run this in your terminal.
-curl -fsSL https://github.com/Swayam-SMishra/post-arch/blob/main/post-arch-install-setup.sh -o post-arch-install-setup.sh
+curl -fsSL https://raw.githubusercontent.com/Swayam-SMishra/post-arch/refs/heads/main/post-arch-install-setup.sh -o post-arch-install-setup.sh
 ```
 
 ```bash
