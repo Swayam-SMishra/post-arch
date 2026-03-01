@@ -253,7 +253,7 @@ main() {
     show_banner
     
     # Full system update
-    gum spin --title "Updating system..." -- pacman -Syu
+    gum spin --title "Updating system..." --title.foreground="212" --padding="2 0"  --show-output -- pacman -Syu --noconfirm
     
     packages=($(select_packages))
     SELECTED_COUNT=${#packages[@]}
