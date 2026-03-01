@@ -33,7 +33,7 @@ check_gum() {
         gum log info "Gum is already installed"
     else
         echo -e "${BOLD_ORANGE}WARNING:${NO_COLOR} Gum not found. Installing..."
-        pacman -S --needed gum
+        pacman -S --needed gum --noconfirm
     fi
 }
 
