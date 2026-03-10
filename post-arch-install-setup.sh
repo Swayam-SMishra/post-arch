@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 
 # ============================================
@@ -13,6 +13,7 @@ GUM_YELLOW="226"
 GUM_RED="196"
 GUM_BLUE="75"
 REPO_URL="https://github.com/Swayam-SMishra/post-arch.git"
+RAW_FILE_URL="https://raw.githubusercontent.com/Swayam-SMishra/post-arch/refs/heads/main/"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 
@@ -33,7 +34,7 @@ check_gum() {
         gum log info "Gum is already installed"
     else
         echo -e "${BOLD_ORANGE}WARNING:${NO_COLOR} Gum not found. Installing..."
-        pacman -S --needed gum --noconfirm
+        pacman -Sy --needed gum --noconfirm
     fi
 }
 
@@ -53,6 +54,15 @@ show_banner() {
         'Arch Linux Post-Install Script By Swayam' 'Ready to configure your system!'
 }
 
+check_full_system_update() {
+    gum confirm \
+        --show-output "Run full system update ?" && \
+    gum spin \
+        --title "Updating system..." \
+        --title.foreground="212" \
+        --padding="2 0"  \
+        --show-output -- pacman -Syu --noconfirm
+}
 
 # ============================================
 # SECTION 5: Package Selection (gum filter)
@@ -63,10 +73,9 @@ select_packages() {
         "micro"
         "htop"
         "btop"
+        "git"
         "curl"
         "wget"
-        # "yay"
-        # "paru"
         "ttf-hack"
         "ttf-0xproto-nerd"
         "ttf-jetbrains-mono-nerd"
@@ -114,7 +123,7 @@ select_packages() {
     
     SELECTED=$(gum filter --no-limit \
         --indicator " >" \
-        --placeholder "Select packages to install (space to toggle)" \
+        --placeholder "Select packages to install " \
         --selected-prefix "[✓]" \
         --unselected-prefix "[ ]" \
         "${packages[@]}")
@@ -136,12 +145,19 @@ install_packages() {
     local packages=("$@")
     local total=${#packages[@]}
     local current=0
-    
+
     for pkg in "${packages[@]}"; do
         ((current++))
         gum spin --title "Installing ($current/$total): $pkg" -- \
-            pacman -S --needed --noconfirm "$pkg" 2>&1 | gum log warn "Failed: $pkg" || true
-    done
+            bash -c "pacman -S --needed --noconfirm \"$pkg\" || { echo \"Failed to install $pkg.\"; exit 1; }" 2>&1 | \
+            {
+                # Read pacman output line by line
+                while IFS= read -r line; do
+                    gum log info "$pkg: $line" # Log all output as info
+                done
+            }
+    done   
+
 }
 
 
@@ -166,11 +182,11 @@ log_info() {
 # SECTION 9: Fetch Configs (git clone / curl)
 # ============================================
 declare -A CONFIG_MAP=(
+    ["kitty"]="kitty.conf"
     ["nvim"]="nvim"
     ["zsh"]="zsh"
     ["fish"]="fish"
     ["tmux"]="tmux"
-    ["kitty"]="kitty"
     ["alacritty"]="alacritty"
     ["foot"]="foot"
     ["yazi"]="yazi"
@@ -194,11 +210,11 @@ fetch_configs_for_selected() {
             continue
         fi
         
-        local url="https://raw.githubusercontent.com/Swayam-SMishra/post-arch/main/$config_path"
+        local rawurl="$RAW_FILE_URL/$config_path"
         local dest="$CONFIG_DIR/$pkg"
         
         if gum spin --title "Fetching config for $pkg..." -- \
-            curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+            curl -fsSL "$rawurl" -o "$dest" 2>/dev/null; then
             gum log success "Fetched config: $pkg → $dest"
             ((fetched++))
         else
@@ -212,7 +228,7 @@ fetch_configs_for_selected() {
 
 
 fetch_configs() {
-    gum confirm "Fetch dotfiles/configs from GitHub?" || return
+    gum confirm "Fetch full/specific configs from GitHub?" || return
     
     local config_choice=$(gum choose "git clone full repo" "curl specific files")
     
@@ -247,13 +263,9 @@ show_summary() {
 # MAIN EXECUTION
 # ============================================
 main() {
-    echo "Syncing latest packages..." && pacman -Sy
-
     check_gum
     show_banner
-    
-    # Full system update
-    gum spin --title "Updating system..." --title.foreground="212" --padding="2 0"  --show-output -- pacman -Syu --noconfirm
+    check_full_system_update
     
     packages=($(select_packages))
     SELECTED_COUNT=${#packages[@]}
