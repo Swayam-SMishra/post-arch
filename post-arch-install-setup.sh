@@ -101,6 +101,8 @@ select_packages() {
         "qt6ct"
         "ark"
         "mpv"
+        "eza"
+        "reflector"
         "reminna"
         "kde-connect"
         "termius"
