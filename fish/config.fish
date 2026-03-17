@@ -100,6 +100,8 @@ end
 ## Useful aliases
 alias c='clear'
 alias sf='sudo yazi'
+alias v='nvim'
+alias nv='nvim $(fzf)'
 alias ff='fastfetch --logo none'
 alias fc='nvim ~/.config/fish/config.fish'
 
