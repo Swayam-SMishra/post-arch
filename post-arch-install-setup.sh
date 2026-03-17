@@ -85,7 +85,7 @@ select_packages() {
         "nushell"
         "fastfetch"
         "yazi"
-        "nerd-fonts"
+        "zellij"
         "foot"
         "kitty"
         "fzf"
