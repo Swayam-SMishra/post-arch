@@ -186,15 +186,13 @@ log_info() {
 # SECTION 9: Fetch Configs (git clone / curl)
 # ============================================
 declare -A CONFIG_MAP=(
-    ["kitty"]="kitty.conf"
+    ["kitty"]="kitty/kitty.conf"
     ["nvim"]="nvim"
-    ["zsh"]="zsh"
-    ["fish"]="fish"
+    ["fish"]="fish/config.fish"
     ["tmux"]="tmux"
     ["alacritty"]="alacritty"
-    ["foot"]="foot"
-    ["yazi"]="yazi"
-    ["fastfetch"]="fastfetch"
+    ["foot"]="foot/foot.ini"
+    ["yazi"]="yazi/init.lua"
     ["zathura"]="zathura"
 )
 
@@ -215,7 +213,8 @@ fetch_configs_for_selected() {
         fi
         
         local rawurl="$RAW_FILE_URL/$config_path"
-        local dest="$CONFIG_DIR/$pkg"
+        local dest="$CONFIG_DIR/${config_path}"
+        mkdir -p "$(dirname "$dest")"
         
         if gum spin --title "Fetching config for $pkg..." -- \
             curl -fsSL "$rawurl" -o "$dest" 2>/dev/null; then
