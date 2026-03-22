@@ -107,6 +107,8 @@ alias ff='fastfetch --logo none'
 alias fc='nvim ~/.config/fish/config.fish'
 
 # Docker alias
+# IMP: To add docker to user group to avoid sudo
+# Use `sudo groupadd docker; sudo usermod -aG docker $USER; newgrp docker;`
 alias ds='docker stats'
 alias dcps='docker ps -a'
 alias dcu='docker compose up -d'
