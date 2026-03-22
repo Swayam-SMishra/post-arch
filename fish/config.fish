@@ -101,9 +101,25 @@ end
 alias c='clear'
 alias sf='sudo yazi'
 alias v='nvim'
+alias sv='sudo nvim'
 alias nv='nvim $(fzf)'
 alias ff='fastfetch --logo none'
 alias fc='nvim ~/.config/fish/config.fish'
+
+# Docker alias
+alias ds='docker stats'
+alias dcps='docker ps -a'
+alias dcu='docker compose up -d'
+alias dcd='docker compose down'
+alias dcdv='docker compose down -v' # remove volume when shutting
+alias drm='docker rm'
+alias drmi='docker rmi'
+alias dvls='docker volume ls'
+alias dvrm='docker volume rm'
+alias dcls='docker container ls'
+alias dils='docker image ls'
+alias dnls='docker network ls'
+alias dnc='docker network create'
 
 # Pacman alias
 alias pinsup='sudo pacman -Sy'
