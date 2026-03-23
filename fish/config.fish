@@ -110,16 +110,19 @@ alias fc='nvim ~/.config/fish/config.fish'
 # IMP: To add docker to user group to avoid sudo
 # Use `sudo groupadd docker; sudo usermod -aG docker $USER; newgrp docker;`
 alias ds='docker stats'
-alias dcps='docker ps -a'
+alias dcps='docker ps -a' 
+# For Nushell, check ` docker <option> --format='{{json .}}' | jq `
+# OR if nushell exists -> ` 'nu -c "docker ps --format=\"table {{.Names}}\t{{.Status}}\t{{.Size}}\t{{.State}}\t{{.Ports}}\"| detect columns --guess"' `
 alias dcu='docker compose up -d'
 alias dcd='docker compose down'
-alias dcdv='docker compose down -v' # remove volume when shutting
+alias dcdv='docker compose down -v' # remove volume also when shutting down the container
 alias drm='docker rm'
 alias drmi='docker rmi'
 alias dvls='docker volume ls'
 alias dvrm='docker volume rm'
 alias dcls='docker container ls'
-alias dils='docker image ls'
+alias dils='docker image ls' 
+# OR if nushell exists -> ` 'nu -c "docker images --format=\"table {{.Repository}}\t{{.Size}}\"| detect columns --guess"' `
 alias dnls='docker network ls'
 alias dnc='docker network create'
 
