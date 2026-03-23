@@ -12,7 +12,7 @@ GUM_GREEN="76"
 GUM_YELLOW="226"
 GUM_RED="196"
 GUM_BLUE="75"
-REPO_URL="https://github.com/Swayam-SMishra/post-arch.git"
+REPO_URL="https://github.com/Swayam-SMishra/post-arch"
 RAW_FILE_URL="https://raw.githubusercontent.com/Swayam-SMishra/post-arch/refs/heads/main/"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 
@@ -187,59 +187,51 @@ log_info() {
 
 
 # ============================================
-# SECTION 9: Fetch Configs (git clone / curl)
+# SECTION 9: Fetch Configs (git clone / ghgrab)
 # ============================================
-declare -A CONFIG_MAP=(
-    ["fish"]="fish/config.fish"
-    ["tmux"]="tmux/tmux.conf"
-    ["yazi"]="yazi/init.lua"
-)
+
+
+check_npm() {
+    if command -v npm &> /dev/null; then
+        gum log info "Npm is already installed"
+    else
+        echo -e "${BOLD_ORANGE}WARNING:${NO_COLOR} Npm not found. Installing..."
+        pacman -S --needed npm --noconfirm
+    fi
+}
 
 
 fetch_configs_for_selected() {
-    local packages=("$@")
-    local fetched=0
-    local skipped=0
+    check_npm
     
     gum log info "Fetching configs for selected packages..."
-    
-    for pkg in "${packages[@]}"; do
-        local config_path="${CONFIG_MAP[$pkg]:-}"
-        
-        if [[ -z "$config_path" ]]; then
-            ((skipped++))
-            continue
-        fi
-        
-        local rawurl="$RAW_FILE_URL/$config_path"
-        local dest="$CONFIG_DIR/${config_path}"
-        mkdir -p "$(dirname "$dest")"
-        
-        if gum spin --title "Fetching config for $pkg..." -- \
-            curl -fsSL "$rawurl" -o "$dest" 2>/dev/null; then
-            gum log success "Fetched config: $pkg → $dest"
-            ((fetched++))
-        else
-            gum log warn "No config found for $pkg (skipping)"
-            ((skipped++))
-        fi
-    done
-    
-    gum log info "Config fetch complete: $fetched fetched, $skipped skipped"
+    mkdir -p "${CONFIG_DIR}"
+
+    # Using npm not pipx, as env path doesn't auto load into shell.
+    gum log info "Setting up for Grabbing Files.."
+    npm install -g @ghgrab/ghgrab
+
+    ghgrab config set path ${CONFIG_DIR} && gum log info "Env Set.. Ready for file selection.."
+
+    # select whole folder only, as single file from folder will download that file without directory name and have to manually move them to directory.
+    ghgrab ${REPO_URL} --no-folder 
+    ghgrab config unset path && gum log info "Env Cleared.."
+
+    gum log success "Successfully fetched all files.. Kindly check files in config directory..   :)"
 }
 
 
 fetch_configs() {
-    gum confirm "Fetch full/specific configs from GitHub?" || return
+    gum confirm "Fetch configs from GitHub ?" || return
     
-    local config_choice=$(gum choose "git clone full repo" "curl specific files")
+    local config_choice=$(gum choose "git clone full repo" "fetch specific files")
     
     case "$config_choice" in
         "git clone full repo")
             gum spin --title "Cloning config repository..." -- \
-                git clone "$REPO_URL" "$CONFIG_DIR/post-install-configs" 2>&1 || log_error "Clone failed"
+                git clone "${REPO_URL}.git" "$CONFIG_DIR/post-install-configs" 2>&1 || log_error "Clone failed"
             ;;
-        "curl specific files")
+        "fetch specific files")
             fetch_configs_for_selected
             ;;
     esac
@@ -274,7 +266,8 @@ main() {
     
     confirm_install
     install_packages "${packages[@]}"
-    fetch_configs
     show_summary
+
+    fetch_configs
 }
 main "$@"
